@@ -4,12 +4,13 @@ var ctx = c.getContext("2d");
 //c contains the properties of the canvas, ctx is the context for drawing.
 var px = [];
 var py = [];
-var pimg = [];
+var pxtileoffset = [];
+var pytileoffset = [];
 var i = 0;
 var n1 = 0;
 var n2 = 0;
 var n3 = 0;
-var tilebounds=40;
+var tilebounds = 40;
 var boxx = (c.width / 2);
 var boxy = (c.height / 2);
 //boxx and boxy are the cords of the player boxes top left corner.
@@ -29,123 +30,152 @@ var boximg = new Image();
 boximg.src = "images/player.jpg";
 boximg.onload = function () {
     "use strict";
-	boxw = boximg.width;
-	boxh = boximg.height;
+    boxw = boximg.width;
+    boxh = boximg.height;
 };
-var middle = new Image();
-middle.src = "images/Ground Tileset/underground.jpg";
-var topmiddle = new Image();
-topmiddle.src = "images/Ground Tileset/aboveground.png";
-var belowmiddle = new Image();
-belowmiddle.src = "images/Ground Tileset/belowground.png";
-var leftmiddle = new Image();
-leftmiddle.src = "images/Ground Tileset/leftground.png";
-var rightmiddle = new Image();
-rightmiddle.src = "images/Ground Tileset/rightground.png";
+var Tileset1 = new Image();
+Tileset1.src = "images/Ground Tileset/Tileset1.png";
 var errdistance = 0;
-function correctpos(){
-	for(n=0;n<px.length;n++){
-		py[n]=(py[n]+errdistance)-1;
-	}
+
+function correctpos() {
+    for (n = 0; n < px.length; n++) {
+        py[n] = (py[n] + errdistance);
+    }
 }
+
 function boundscheck() {
     "use strict";
-	for (i = 0; i < px.length; i++) {
-		if ((boxx >= px[i]) && (boxx <= px[i] + tilebounds) && (boxy + boxh >= py[i]) && (boxy + boxh < py[i] - pyv)) {
-			pyv = 0;
-			errdistance = ((boxy + boxh) - py[i]);
-			inair = false;
-			correctpos();
-		}
-		if((boxx<=px[i])&&(boxx+boxw>=px[i])&&(boxy+boxh>=py[i])&&(boxy+boxh<py[i]-pyv)){
-			pyv=0;
-			errdistance=((boxy+boxh)-py[i]);
-			inair=false;
-			correctpos();
-		}
-		if((boxx>=px[i])&&(boxx<=px[i]+tilebounds)&&(boxy<=py[i]+tilebounds)&&(boxy>=py[i]+pyv)&&(pyv>0)){
-			pyv=-0.1;
-			inair=true;
-		}
-		if((boxx<=px[i])&&(boxx+boxw>=px[i])&&(boxy<=py[i]+tilebounds)&&(boxy>=py[i]+pyv)&&(pyv>0)){
-			pyv=-0.1;
-			inair=true;
-		}
-	}
-	if(py[lowestpy]<=0){
-		genplat();
-		pyv=0;
-	}
+    for (i = 0; i < px.length; i++) {
+        if ((boxx >= px[i]) && (boxx <= px[i] + tilebounds) && (boxy + boxh >= py[i]) && (boxy + boxh < py[i] - pyv)) {
+            pyv = 0;
+            errdistance = ((boxy + boxh) - py[i]);
+            inair = false;
+            correctpos();
+        }
+        if ((boxx <= px[i]) && (boxx + boxw >= px[i]) && (boxy + boxh >= py[i]) && (boxy + boxh < py[i] - pyv)) {
+            pyv = 0;
+            errdistance = ((boxy + boxh) - py[i]);
+            inair = false;
+            correctpos();
+        }
+        if ((boxx >= px[i]) && (boxx <= px[i] + tilebounds) && (boxy <= py[i] + tilebounds) && (boxy >= py[i] + pyv) && (pyv > 0)) {
+            pyv = -0.1;
+            inair = true;
+        }
+        if ((boxx <= px[i]) && (boxx + boxw >= px[i]) && (boxy <= py[i] + tilebounds) && (boxy >= py[i] + pyv) && (pyv > 0)) {
+            pyv = -0.1;
+            inair = true;
+        }
+        if((py[i]==boxy+boxh)&&(boxx+boxw==px[i])){
+            inair=true;
+        }
+        if((py[i]==boxy+boxh)&&(boxx==px[i]+tilebounds)){
+            inair=true;
+        }
+    }
+    if (py[lowestpy] <= 0) {
+        genplat();
+        pyv = 0;
+    }
 }
-function draw(){
-	ctx.clearRect(0,0,c.width,c.height);
-    ctx.drawImage(boximg,boxx,boxy);
-		for(n1=0;n1<px.length;n1++){
-            ctx.drawImage(pimg[n1],px[n1],py[n1]);
-			py[n1]=py[n1]+pyv;
-			if(right==true){
-				px[n1]--;
-			}
-			if(left==true){
-				px[n1]++;
-			}
-		}
-	if(inair==true){
-		pyv=pyv-0.1;
-	}
-	boundscheck();
+
+function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.drawImage(boximg, boxx, boxy);
+    for (n1 = 0; n1 < px.length; n1++) {
+        ctx.drawImage(
+        Tileset1,
+        pxtileoffset[n1],pytileoffset[n1],
+        tilebounds,tilebounds,
+        px[n1],py[n1],
+        tilebounds,tilebounds
+        );
+        py[n1] = py[n1] + pyv;
+        if (right == true) {
+            px[n1]--;
+        }
+        if (left == true) {
+            px[n1]++;
+        }
+    }
+    if (inair == true) {
+        pyv = pyv - 0.1;
+    }
+    boundscheck();
 }
-var frames = setInterval(draw,10);
+var frames = setInterval(draw, 10);
 //frames is the frame rate of the game, in this case each tick is every 10ms.
 function keyDownHandler(e) {
-    if(e.keyCode == 68) {
+    if (e.keyCode == 68) {
         right = true;
     }
-    if(e.keyCode == 65) {
+    if (e.keyCode == 65) {
         left = true;
     }
-	if(e.keyCode == 87) {
+    if (e.keyCode == 87) {
         up = true;
-		if(inair==false){
-			inair=true;
-			pyv=5;
-		}
+        if (inair == false) {
+            inair = true;
+            pyv = 5;
+        }
     }
 }
 
 function keyUpHandler(e) {
-    if(e.keyCode == 68) {
+    if (e.keyCode == 68) {
         right = false;
     }
-    if(e.keyCode == 65) {
+    if (e.keyCode == 65) {
         left = false;
     }
-	if(e.keyCode == 87) {
+    if (e.keyCode == 87) {
         up = false;
     }
 }
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
-function genplat(){
-	px[0]=300;
-	py[0]=400;
-    pimg[0]=middle;
-    px[1]=260;
-	py[1]=400;
-    pimg[1]=leftmiddle;
-    px[2]=300;
-	py[2]=360;
-    pimg[2]=topmiddle;
-    px[3]=300;
-	py[3]=440;
-    pimg[3]=belowmiddle;
-    px[4]=340;
-	py[4]=400;
-    pimg[4]=rightmiddle;
-	for(i=0;i<px.length;i++){
-		if(py[i]<py[lowestpy]){
-			lowestpy=i;
-		}
-	}
+
+function genplat() {
+    px[0] = 260;
+    py[0] = 360;
+    pxtileoffset[0] = 0;
+    pytileoffset[0] = 0;
+    px[1] = 300;
+    py[1] = 360;
+    pxtileoffset[1] = 40;
+    pytileoffset[1] = 0;
+    px[2] = 340;
+    py[2] = 360;
+    pxtileoffset[2] = 80;
+    pytileoffset[2] = 0;
+    px[3] = 260;
+    py[3] = 400;
+    pxtileoffset[3] = 0;
+    pytileoffset[3] = 40;
+    px[4] = 300;
+    py[4] = 400;
+    pxtileoffset[4] = 40;
+    pytileoffset[4] = 40;
+    px[5] = 340;
+    py[5] = 400;
+    pxtileoffset[5] = 80;
+    pytileoffset[5] = 40;
+    px[6] = 260;
+    py[6] = 440;
+    pxtileoffset[6] = 0;
+    pytileoffset[6] = 80;
+    px[7] = 300;
+    py[7] = 440;
+    pxtileoffset[7] = 40;
+    pytileoffset[7] = 80;
+    px[8] = 340;
+    py[8] = 440;
+    pxtileoffset[8] = 80;
+    pytileoffset[8] = 80;
+    for (i = 0; i < px.length; i++) {
+        if (py[i] < py[lowestpy]) {
+            lowestpy = i;
+        }
+    }
 }
 genplat();
