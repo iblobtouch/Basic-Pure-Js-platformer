@@ -7,9 +7,6 @@ var py = [];
 var pxtileoffset = [];
 var pytileoffset = [];
 var i = 0;
-var n1 = 0;
-var n2 = 0;
-var n3 = 0;
 var tilebounds = 40;
 var boxx = (c.width / 2);
 var boxy = (c.height / 2);
@@ -38,83 +35,22 @@ Tileset1.src = "images/Ground Tileset/Tileset1.png";
 var errdistance = 0;
 
 function correctpos() {
-    for (n = 0; n < px.length; n++) {
-        py[n] = (py[n] + errdistance);
-    }
-}
-
-function boundscheck() {
     "use strict";
     for (i = 0; i < px.length; i++) {
-        if ((boxx >= px[i]) && (boxx <= px[i] + tilebounds) && (boxy + boxh >= py[i]) && (boxy + boxh < py[i] - pyv)) {
-            pyv = 0;
-            errdistance = ((boxy + boxh) - py[i]);
-            inair = false;
-            correctpos();
-        }
-        if ((boxx <= px[i]) && (boxx + boxw >= px[i]) && (boxy + boxh >= py[i]) && (boxy + boxh < py[i] - pyv)) {
-            pyv = 0;
-            errdistance = ((boxy + boxh) - py[i]);
-            inair = false;
-            correctpos();
-        }
-        if ((boxx >= px[i]) && (boxx <= px[i] + tilebounds) && (boxy <= py[i] + tilebounds) && (boxy >= py[i] + pyv) && (pyv > 0)) {
-            pyv = -0.1;
-            inair = true;
-        }
-        if ((boxx <= px[i]) && (boxx + boxw >= px[i]) && (boxy <= py[i] + tilebounds) && (boxy >= py[i] + pyv) && (pyv > 0)) {
-            pyv = -0.1;
-            inair = true;
-        }
-        if((py[i]==boxy+boxh)&&(boxx+boxw==px[i])){
-            inair=true;
-        }
-        if((py[i]==boxy+boxh)&&(boxx==px[i]+tilebounds)){
-            inair=true;
-        }
-    }
-    if (py[lowestpy] <= 0) {
-        genplat();
-        pyv = 0;
+        py[i] = (py[i] + errdistance);
     }
 }
-
-function draw() {
-    ctx.clearRect(0, 0, c.width, c.height);
-    ctx.drawImage(boximg, boxx, boxy);
-    for (n1 = 0; n1 < px.length; n1++) {
-        ctx.drawImage(
-        Tileset1,
-        pxtileoffset[n1],pytileoffset[n1],
-        tilebounds,tilebounds,
-        px[n1],py[n1],
-        tilebounds,tilebounds
-        );
-        py[n1] = py[n1] + pyv;
-        if (right == true) {
-            px[n1]--;
-        }
-        if (left == true) {
-            px[n1]++;
-        }
-    }
-    if (inair == true) {
-        pyv = pyv - 0.1;
-    }
-    boundscheck();
-}
-var frames = setInterval(draw, 10);
-//frames is the frame rate of the game, in this case each tick is every 10ms.
 function keyDownHandler(e) {
-    if (e.keyCode == 68) {
+    "use strict";
+    if (e.keyCode === 68) {
         right = true;
     }
-    if (e.keyCode == 65) {
+    if (e.keyCode === 65) {
         left = true;
     }
-    if (e.keyCode == 87) {
+    if (e.keyCode === 87) {
         up = true;
-        if (inair == false) {
+        if (inair === false) {
             inair = true;
             pyv = 5;
         }
@@ -122,13 +58,14 @@ function keyDownHandler(e) {
 }
 
 function keyUpHandler(e) {
-    if (e.keyCode == 68) {
+    "use strict";
+    if (e.keyCode === 68) {
         right = false;
     }
-    if (e.keyCode == 65) {
+    if (e.keyCode === 65) {
         left = false;
     }
-    if (e.keyCode == 87) {
+    if (e.keyCode === 87) {
         up = false;
     }
 }
@@ -136,6 +73,7 @@ document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
 function genplat() {
+    "use strict";
     px[0] = 260;
     py[0] = 360;
     pxtileoffset[0] = 0;
@@ -179,3 +117,60 @@ function genplat() {
     }
 }
 genplat();
+
+function boundscheck() {
+    "use strict";
+    for (i = 0; i < px.length; i++) {
+        if ((boxx >= px[i]) && (boxx <= px[i] + tilebounds) && (boxy + boxh >= py[i]) && (boxy + boxh < py[i] - pyv)) {
+            pyv = 0;
+            errdistance = ((boxy + boxh) - py[i]);
+            inair = false;
+            correctpos();
+        }
+        if ((boxx <= px[i]) && (boxx + boxw >= px[i]) && (boxy + boxh >= py[i]) && (boxy + boxh < py[i] - pyv)) {
+            pyv = 0;
+            errdistance = ((boxy + boxh) - py[i]);
+            inair = false;
+            correctpos();
+        }
+        if ((boxx >= px[i]) && (boxx <= px[i] + tilebounds) && (boxy <= py[i] + tilebounds) && (boxy >= py[i] + pyv) && (pyv > 0)) {
+            pyv = -0.1;
+            inair = true;
+        }
+        if ((boxx <= px[i]) && (boxx + boxw >= px[i]) && (boxy <= py[i] + tilebounds) && (boxy >= py[i] + pyv) && (pyv > 0)) {
+            pyv = -0.1;
+            inair = true;
+        }
+        if ((py[i] === boxy + boxh) && (boxx + boxw === px[i])) {
+            inair = true;
+        }
+        if ((py[i] === boxy + boxh) && (boxx === px[i] + tilebounds)) {
+            inair = true;
+        }
+    }
+    if (py[lowestpy] <= 0) {
+        genplat();
+        pyv = 0;
+    }
+}
+function draw() {
+    "use strict";
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.drawImage(boximg, boxx, boxy);
+    for (i = 0; i < px.length; i++) {
+        ctx.drawImage(Tileset1, pxtileoffset[i], pytileoffset[i], tilebounds, tilebounds, px[i], py[i], tilebounds, tilebounds);
+        py[i] = py[i] + pyv;
+        if (right === true) {
+            px[i]--;
+        }
+        if (left === true) {
+            px[i]++;
+        }
+    }
+    if (inair === true) {
+        pyv = pyv - 0.1;
+    }
+    boundscheck();
+}
+var frames = setInterval(draw, 10);
+//frames is the frame rate of the game, in this case each tick is every 10ms.
