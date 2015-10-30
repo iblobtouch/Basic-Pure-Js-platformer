@@ -2,6 +2,7 @@ p {
 	color:blue;
 }
 canvas{
+	border:9px solid #000000;
     padding-left: 0;
     padding-right: 0;
     margin-left: auto;
