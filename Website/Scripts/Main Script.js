@@ -7,6 +7,8 @@ var py = [];
 var pxtileoffset = [];
 var pytileoffset = [];
 var i = 0;
+var mousex = 0;
+var mousey = 0;
 var tilebounds = 40;
 var boxx = (c.width / 2);
 var boxy = (c.height / 2);
@@ -40,6 +42,7 @@ function correctpos() {
         py[i] = (py[i] + errdistance);
     }
 }
+
 function keyDownHandler(e) {
     "use strict";
     if (e.keyCode === 68) {
@@ -153,8 +156,10 @@ function boundscheck() {
         pyv = 0;
     }
 }
-function draw() {
+
+function gamedraw() {
     "use strict";
+    clearInterval(menu);
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.drawImage(boximg, boxx, boxy);
     for (i = 0; i < px.length; i++) {
@@ -172,5 +177,50 @@ function draw() {
     }
     boundscheck();
 }
-var frames = setInterval(draw, 10);
-//frames is the frame rate of the game, in this case each tick is every 10ms.
+
+function drawmenu() {
+    "use strict";
+    clearInterval(frames);
+    ctx.strokeStyle = "#000000";
+    if ((mousey > 0) && (mousey < 110) && (mousey > 55)) {
+        ctx.fillStyle = "#888888";
+    } else {
+        ctx.fillStyle = "#FFFFFF";
+    }
+    ctx.fillRect(20, 50, c.width - 40, 50);
+    ctx.strokeRect(20, 50, c.width - 40, 50);
+    ctx.fillStyle = "#000000";
+    ctx.font = "30px Arial";
+    ctx.fillText("Play", (c.width / 2) - 30, 85, c.width - 40);
+}
+
+function onmove(e) {
+    "use strict";
+    if (!e) {
+        e = window.event;
+    }
+    if (e.pageX || e.pageY) {
+        mousex = e.pageX;
+        mousey = e.pageY;
+    } else if (e.clientX || e.clientY) {
+        mousex = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+        mousey = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    }
+    mousex = mousex - ((document.body.clientWidth - c.width) / 2);
+    mousey = mousey - 8;
+    document.getElementById("csv").innerHTML = mousex + " " + mousey;
+}
+
+function onclick(e) {
+    "use strict";
+    if ((mousey > 0) && (mousey < 110) && (mousey > 55)) {
+        clearInterval(menu);
+        clearInterval(frames);
+        frames = setInterval(gamedraw, 10);
+    }
+}
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+c.addEventListener("mousemove", onmove, true);
+c.addEventListener("click", onclick, true);
+var menu = setInterval(drawmenu, 10);
