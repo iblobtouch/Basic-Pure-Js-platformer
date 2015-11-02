@@ -7,6 +7,7 @@ var py = [];
 var pxtileoffset = [];
 var pytileoffset = [];
 var i = 0;
+var n1 = 0;
 var mousex = 0;
 var mousey = 0;
 var tilebounds = 40;
@@ -19,9 +20,12 @@ var right = false;
 var left = false;
 var up = false;
 //Is the player pressing the d,a or w key?
+var canright=true;
+var canleft=true;
 var inair = true;
 //Is the player currently in the air, and should they be going up?
 var pyv = 0;
+var pxv = 1;
 //pyv is the players vertical velocity.
 var lowestpy = 0;
 //The platform with the highest y value.
@@ -53,6 +57,8 @@ function keyDownHandler(e) {
     }
     if (e.keyCode === 87) {
         up = true;
+        canleft=true;
+        canright=true;
         if (inair === false) {
             inair = true;
             pyv = 5;
@@ -113,47 +119,61 @@ function genplat() {
     py[8] = 440;
     pxtileoffset[8] = 80;
     pytileoffset[8] = 80;
+    px[9] = 300;
+    py[9] = 320;
+    pxtileoffset[9] = 40;
+    pytileoffset[9] = 40;
+    px[10] = 300;
+    py[10] = 220;
+    pxtileoffset[10] = 40;
+    pytileoffset[10] = 40;
     for (i = 0; i < px.length; i++) {
-        if (py[i] < py[lowestpy]) {
+        if (py[i] > py[lowestpy]) {
             lowestpy = i;
         }
     }
+    clearInterval(collisioncheck);
+    collisioncheck=setInterval(boundscheck,10);
 }
-genplat();
 
 function boundscheck() {
     "use strict";
     for (i = 0; i < px.length; i++) {
-        if ((boxx >= px[i]) && (boxx <= px[i] + tilebounds) && (boxy + boxh >= py[i]) && (boxy + boxh < py[i] - pyv)) {
-            pyv = 0;
-            errdistance = ((boxy + boxh) - py[i]);
-            inair = false;
-            correctpos();
+        if(((boxy+boxh-pyv>=py[i])&&(boxx<=px[i])&&(boxx+boxw>px[i])&&(pyv<0)&&(boxy+boxh<=py[i]))||((boxy+boxh-pyv>=py[i])&&(boxx>=px[i])&&(boxx<=px[i]+tilebounds)&&(pyv<0)&&(boxy<=py[i]))){
+            var pyi=py[i];
+            for(n1 = 0; n1 < px.length; n1++){
+                py[n1]=py[n1]-(pyi-(boxy+boxh));
+                inair=false;
+                pyv=0;
+            }  
         }
-        if ((boxx <= px[i]) && (boxx + boxw >= px[i]) && (boxy + boxh >= py[i]) && (boxy + boxh < py[i] - pyv)) {
-            pyv = 0;
-            errdistance = ((boxy + boxh) - py[i]);
-            inair = false;
-            correctpos();
+        if((boxx+boxw-pyv>=px[i])&&(boxy+boxh>=py[i]+tilebounds)&&(boxy<=py[i]+tilebounds)&&(right===true)&&(boxx<px[i])){
+            var pxi=px[i];
+            for(n1 = 0; n1 < px.length; n1++){
+                px[n1]=px[n1]-(pxi-(boxx+boxw));
+                canright=false;
+            } 
         }
-        if ((boxx >= px[i]) && (boxx <= px[i] + tilebounds) && (boxy <= py[i] + tilebounds) && (boxy >= py[i] + pyv) && (pyv > 0)) {
-            pyv = -0.1;
-            inair = true;
+        if(((boxx+boxw-pyv>=px[i])&&(boxy<=py[i])&&(boxy+boxh>=py[i])&&(right===true)&&(boxx<px[i]))){
+            var pxi=px[i];
+            for(n1 = 0; n1 < px.length; n1++){
+                px[n1]=px[n1]-(pxi-(boxx+boxw));
+                canright=false;
+            } 
         }
-        if ((boxx <= px[i]) && (boxx + boxw >= px[i]) && (boxy <= py[i] + tilebounds) && (boxy >= py[i] + pyv) && (pyv > 0)) {
-            pyv = -0.1;
-            inair = true;
-        }
-        if ((py[i] === boxy + boxh) && (boxx + boxw === px[i])) {
-            inair = true;
-        }
-        if ((py[i] === boxy + boxh) && (boxx === px[i] + tilebounds)) {
-            inair = true;
+        if(((boxx-pyv<=px[i]+tilebounds)&&(boxy+boxh>=py[i]+tilebounds)&&(boxy<=py[i]+tilebounds)&&(left===true))||((boxx-pyv<=px[i]+tilebounds)&&(boxy<=py[i])&&(boxy+boxh>py[i])&&(left===true))){
+            var pxi=px[i];
+            for(n1 = 0; n1 < px.length; n1++){
+                //px[n1]=px[n1]-(pxi-(boxx+boxw));
+                //canleft=false;
+            } 
         }
     }
     if (py[lowestpy] <= 0) {
         genplat();
         pyv = 0;
+        canright=true;
+        canleft=true;
     }
 }
 
@@ -163,23 +183,30 @@ function gamedraw() {
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.drawImage(boximg, boxx, boxy);
     for (i = 0; i < px.length; i++) {
-        ctx.drawImage(Tileset1, pxtileoffset[i], pytileoffset[i], tilebounds, tilebounds, px[i], py[i], tilebounds, tilebounds);
         py[i] = py[i] + pyv;
-        if (right === true) {
-            px[i]--;
+        if ((right === true)&&(canright===true)) {
+            pxv=-1;
+            px[i]= px[i] + pxv;
+            canleft=true;
         }
-        if (left === true) {
-            px[i]++;
+        if ((left === true)&&(canleft===true)) {
+            pxv=1;
+            px[i]= px[i] + pxv;
+            canright=true;
         }
+        if((left===false)&&(right===false)){
+            pxv=0;
+        }
+        ctx.drawImage(Tileset1, pxtileoffset[i], pytileoffset[i], tilebounds, tilebounds, px[i], py[i], tilebounds, tilebounds);
     }
     if (inair === true) {
         pyv = pyv - 0.1;
     }
-    boundscheck();
 }
 
 function drawmenu() {
     "use strict";
+    document.getElementById("pxi").innerHTML = (c.width / 2+boxw);
     clearInterval(frames);
     ctx.strokeStyle = "#000000";
     if ((mousey > 0) && (mousey < 110) && (mousey > 55)) {
@@ -216,6 +243,7 @@ function onclick(e) {
     if ((mousey > 0) && (mousey < 110) && (mousey > 55)) {
         clearInterval(menu);
         clearInterval(frames);
+        genplat();
         frames = setInterval(gamedraw, 10);
     }
 }
@@ -224,3 +252,5 @@ document.addEventListener("keyup", keyUpHandler, false);
 c.addEventListener("mousemove", onmove, true);
 c.addEventListener("click", onclick, true);
 var menu = setInterval(drawmenu, 10);
+var frames;
+var collisioncheck;
