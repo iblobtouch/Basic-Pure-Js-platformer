@@ -6,6 +6,8 @@ var px = [];
 var py = [];
 var pxtileoffset = [];
 var pytileoffset = [];
+var tilexoffset = 0;
+var tileyoffset = 0;
 var i = 0;
 var n1 = 0;
 var mousex = 0;
@@ -20,8 +22,8 @@ var right = false;
 var left = false;
 var up = false;
 //Is the player pressing the d,a or w key?
-var canright=true;
-var canleft=true;
+var canright = true;
+var canleft = true;
 var inair = true;
 //Is the player currently in the air, and should they be going up?
 var pyv = 0;
@@ -38,14 +40,7 @@ boximg.onload = function () {
 };
 var Tileset1 = new Image();
 Tileset1.src = "images/Ground Tileset/Tileset1.png";
-var errdistance = 0;
-
-function correctpos() {
-    "use strict";
-    for (i = 0; i < px.length; i++) {
-        py[i] = (py[i] + errdistance);
-    }
-}
+var menu = setInterval(drawmenu, 10);
 
 function keyDownHandler(e) {
     "use strict";
@@ -57,8 +52,8 @@ function keyDownHandler(e) {
     }
     if (e.keyCode === 87) {
         up = true;
-        canleft=true;
-        canright=true;
+        canleft = true;
+        canright = true;
         if (inair === false) {
             inair = true;
             pyv = 5;
@@ -78,8 +73,6 @@ function keyUpHandler(e) {
         up = false;
     }
 }
-document.addEventListener("keydown", keyDownHandler, false);
-document.addEventListener("keyup", keyUpHandler, false);
 
 function genplat() {
     "use strict";
@@ -132,81 +125,79 @@ function genplat() {
             lowestpy = i;
         }
     }
-    clearInterval(collisioncheck);
-    collisioncheck=setInterval(boundscheck,10);
 }
 
 function boundscheck() {
     "use strict";
     for (i = 0; i < px.length; i++) {
-        if(((boxy+boxh-pyv>=py[i])&&(boxx<=px[i])&&(boxx+boxw>px[i])&&(pyv<0)&&(boxy+boxh<=py[i]))||((boxy+boxh-pyv>=py[i])&&(boxx>=px[i])&&(boxx<=px[i]+tilebounds)&&(pyv<0)&&(boxy<=py[i]))){
-            var pyi=py[i];
-            for(n1 = 0; n1 < px.length; n1++){
-                py[n1]=py[n1]-(pyi-(boxy+boxh));
-                inair=false;
-                pyv=0;
-            }  
+        if (((boxy + boxh - pyv >= py[i] + tileyoffset) && (boxx < px[i] + tilexoffset) && (boxx + boxw > px[i] + tilexoffset) && (boxy <= py[i] + tileyoffset) && (pyv < 0) && (boxx <= px[i] + tilebounds + tilexoffset)) || ((boxy + boxh - pyv >= py[i] + tileyoffset) && (boxx >= px[i] + tilexoffset) && (boxx < px[i] + tilexoffset + tilebounds) && (boxy <= py[i] + tileyoffset) && (pyv < 0) && (boxx <= px[i] + tilebounds + tilexoffset))) {
+            inair = false;
+            pyv = 0;
+            tileyoffset = tileyoffset + (boxy + boxh - (py[i] + tileyoffset));
+            tileyoffset = Math.round(tileyoffset);
+            canright = true;
+            canleft = true;
         }
-        if((boxx+boxw-pyv>=px[i])&&(boxy+boxh>=py[i]+tilebounds)&&(boxy<=py[i]+tilebounds)&&(right===true)&&(boxx<px[i])){
-            var pxi=px[i];
-            for(n1 = 0; n1 < px.length; n1++){
-                px[n1]=px[n1]-(pxi-(boxx+boxw));
-                canright=false;
-            } 
+        if (((boxy - pyv < py[i] + tilebounds + tileyoffset) && (boxy + boxh > py[i] + tilebounds + tileyoffset) && (boxx < px[i] + tilexoffset) && (boxx + boxw > px[i] + tilexoffset)) || ((boxy - pyv < py[i] + tilebounds + tileyoffset) && (boxy + boxh > py[i] + tilebounds + tileyoffset) && (boxx >= px[i] + tilexoffset) && (boxx < px[i] + tilexoffset + tilebounds))) {
+            tileyoffset = tileyoffset + (boxy - (py[i] + tilebounds + tileyoffset)) - 1;
+            pyv = 0;
         }
-        if(((boxx+boxw-pyv>=px[i])&&(boxy<=py[i])&&(boxy+boxh>=py[i])&&(right===true)&&(boxx<px[i]))){
-            var pxi=px[i];
-            for(n1 = 0; n1 < px.length; n1++){
-                px[n1]=px[n1]-(pxi-(boxx+boxw));
-                canright=false;
-            } 
+        if (((boxx + boxw - pxv >= px[i] + tilexoffset) && (boxx < px[i] + (tilebounds / 2) + tilexoffset) && (boxy + boxh >= py[i] + tilebounds + tileyoffset) && (boxy <= py[i] + tilebounds + tileyoffset)) || ((boxx + boxw - pxv >= px[i] + tilexoffset) && (boxx < px[i] + (tilebounds / 2) + tilexoffset) && (boxy + boxh > py[i] + tileyoffset) && (boxy <= py[i] + tilebounds + tileyoffset))) {
+            tilexoffset = tilexoffset + ((boxx + boxw) - (px[i] + tilexoffset));
+            canright = false;
+            canleft = true;
         }
-        if(((boxx-pyv<=px[i]+tilebounds)&&(boxy+boxh>=py[i]+tilebounds)&&(boxy<=py[i]+tilebounds)&&(left===true))||((boxx-pyv<=px[i]+tilebounds)&&(boxy<=py[i])&&(boxy+boxh>py[i])&&(left===true))){
-            var pxi=px[i];
-            for(n1 = 0; n1 < px.length; n1++){
-                //px[n1]=px[n1]-(pxi-(boxx+boxw));
-                //canleft=false;
-            } 
+        if (((boxx - pxv <= px[i] + tilebounds + tilexoffset) && (boxx > px[i] + tilexoffset + (tilebounds / 2)) && (boxy + boxh >= py[i] + tilebounds + tileyoffset) && (boxy <= py[i] + tilebounds + tileyoffset)) || ((boxx - pxv < px[i] + tilebounds + tilexoffset) && (boxx > px[i] + tilexoffset + (tilebounds / 2)) && (boxy + boxh > py[i] + tileyoffset) && (boxy <= py[i] + tilebounds + tileyoffset))) {
+            tilexoffset = tilexoffset - ((px[i] + tilebounds + tilexoffset) - boxx);
+            canright = true;
+            canleft = false;
+        }
+        if (((boxx + boxw - pyv < px[i] + tilexoffset) && (boxx + boxw + 2 > px[i] + tilexoffset) && (boxy + boxh <= py[i] + tileyoffset)) || ((boxx - pyv > px[i] + tilebounds + tilexoffset) && (boxx - pyv - 2 < px[i] + tilebounds + tilexoffset) && (boxy + boxh <= py[i] + tileyoffset))) {
+            inair = true;
+            canright = true;
+            canleft = true;
         }
     }
-    if (py[lowestpy] <= 0) {
-        genplat();
+    if (py[lowestpy] + tileyoffset <= 0) {
+        tilexoffset = 0;
+        tileyoffset = 0;
         pyv = 0;
-        canright=true;
-        canleft=true;
+        canright = true;
+        canleft = true;
     }
 }
 
 function gamedraw() {
     "use strict";
     clearInterval(menu);
+    boundscheck();
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.drawImage(boximg, boxx, boxy);
     for (i = 0; i < px.length; i++) {
-        py[i] = py[i] + pyv;
-        if ((right === true)&&(canright===true)) {
-            pxv=-1;
-            px[i]= px[i] + pxv;
-            canleft=true;
-        }
-        if ((left === true)&&(canleft===true)) {
-            pxv=1;
-            px[i]= px[i] + pxv;
-            canright=true;
-        }
-        if((left===false)&&(right===false)){
-            pxv=0;
-        }
-        ctx.drawImage(Tileset1, pxtileoffset[i], pytileoffset[i], tilebounds, tilebounds, px[i], py[i], tilebounds, tilebounds);
+        ctx.drawImage(Tileset1, pxtileoffset[i], pytileoffset[i], tilebounds, tilebounds, px[i] + tilexoffset, py[i] + tileyoffset, tilebounds, tilebounds);
+    }
+    if ((right === true) && (canright === true)) {
+        pxv = -1;
+        tilexoffset = tilexoffset + pxv;
+        canleft = true;
+    }
+    if ((left === true) && (canleft === true)) {
+        pxv = 1;
+        tilexoffset = tilexoffset + pxv;
+        canright = true;
+    }
+    if ((left === false) && (right === false)) {
+        pxv = 0;
     }
     if (inair === true) {
         pyv = pyv - 0.1;
     }
+    tileyoffset = tileyoffset + pyv;
+    document.getElementById("pxi").innerHTML = boxx + " " + boxy + " " + tilexoffset + " " + tileyoffset + " " + pyv;
 }
 
 function drawmenu() {
     "use strict";
-    document.getElementById("pxi").innerHTML = (c.width / 2+boxw);
     clearInterval(frames);
     ctx.strokeStyle = "#000000";
     if ((mousey > 0) && (mousey < 110) && (mousey > 55)) {
@@ -235,7 +226,6 @@ function onmove(e) {
     }
     mousex = mousex - ((document.body.clientWidth - c.width) / 2);
     mousey = mousey - 8;
-    document.getElementById("csv").innerHTML = mousex + " " + mousey;
 }
 
 function onclick(e) {
@@ -251,6 +241,4 @@ document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 c.addEventListener("mousemove", onmove, true);
 c.addEventListener("click", onclick, true);
-var menu = setInterval(drawmenu, 10);
 var frames;
-var collisioncheck;
